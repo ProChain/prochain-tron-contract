@@ -16,9 +16,7 @@ contract PraboxAccessControl {
 
     modifier onlyAdmin() {
         require(
-            msg.sender == adminA ||
-            msg.sender == adminB ||
-            msg.sender == owner
+            msg.sender == adminA || msg.sender == adminB || msg.sender == owner
         );
         _;
     }
