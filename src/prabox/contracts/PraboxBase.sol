@@ -1,6 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.23;
 
-import "./PraboxAccessControl.sol";
+import "./Access.sol";
 
 
 library SafeMath {
@@ -60,24 +60,35 @@ library SafeMath {
     @title Holds all common structs, events and base variables.
 */
 contract PraboxBase is PraboxAccessControl {
+    // struct Candy {
+    //     uint32 candyId;
+    //     string imgurl;
+    //     string backurl;
+    //     string brief;
+    //     string title;
+    //     string landurl;
+    //     uint256 total;
+    //     uint256 balance;
+    //     uint256 perclick;
+    // }
+
     struct Candy {
         uint32 candyId;
-        string imgurl;
-        string backurl;
-        string brief;
-        string title;
-        string landurl;
         uint256 total;
         uint256 balance;
         uint256 perclick;
+        TokenInterface token;
+        bool isValue;
     }
-
+    
     struct User {
         address userAddress;
         uint256 balance;
         uint8 count;
         uint256 coldtime; //seconds
         uint256 lasttime; //seconds
+        uint256 authtime;
+        bool isValue;
     }
 
     struct Black {
@@ -120,52 +131,99 @@ contract PraboxBase is PraboxAccessControl {
         _;
     }
 
+    /*** EVENTS ***/
+    event ClickEvent(address indexed _user, uint32 indexed _candyId, uint256 _perclick);
+
     /*** FUNCTION ***/
     constructor() public {
         owner = msg.sender;
     }
 
     function addCandy(
-        string memory _img,
-        string memory _back,
-        string memory _brief,
-        string memory _title,
-        string memory _landurl,
+        uint32 _id,
         uint256 _total,
         uint256 _balance,
-        uint256 _perclick
+        uint256 _perclick,
+        TokenInterface _token
     ) public onlyAdmin returns (uint32) {
         //id++
-        uint32 id = uint32(candyList.length) + 1;
 
-        require(id <= 65535);
+        require(_id <= 65535);
 
         Candy memory candy = Candy({
-            candyId: id,
-            imgurl: _img,
-            backurl: _back,
-            brief: _brief,
-            title: _title,
-            landurl: _landurl,
+            candyId: _id,
             total: _total,
             balance: _balance,
-            perclick: _perclick
+            perclick: _perclick,
+            token: _token,
+            isValue: true
         });
 
-        candyList.push(candy);
-        candyMap[id] = candy;
-
-        return id;
+        candyMap[_id] = candy;
+        return _id;
     }
 
-    function click(uint32 _candyId) public validAddress returns (uint32) {
+    function click(uint32 _candyId) public whenNotPaused returns (uint32) {
+        Candy storage candy = candyMap[_candyId];
+        require(candy.candyId > 0 && candy.isValue);
+
+        User storage user = userAddrMap[msg.sender];
+        require(user.isValue && user.authtime + 3600 * 24 >= now);
+        require(user.count > 0 || user.lasttime + user.coldtime < now);
+        require(candy.perclick <= candy.balance);
+        candy.token.transfer(msg.sender, candy.perclick);
+        candy.balance = candy.balance - candy.perclick;
+        user.count = 0;
+        user.lasttime = now;
+
+        ClickEvent(msg.sender, candy.candyId, candy.perclick);
+
+        return _candyId;
+    }
+
+    function auth(address userAddress) public onlyAdmin returns (bool) {
+        User storage user = userAddrMap[userAddress];
+        if (!user.isValue) {
+            user.userAddress = msg.sender;
+            user.balance = 0;
+            user.count = 1;
+            user.coldtime = 14400;
+            user.lasttime = now;
+            user.isValue = true;
+        }
+        user.authtime = now;
+        return true;
+    }
+
+    function getCandy(uint32 _candyId) public view returns (
+        uint32, 
+        uint256, 
+        uint256, 
+        uint256, 
+        address, 
+        bool) {
         Candy memory candy = candyMap[_candyId];
-        require(candy.candyId > 0);
-
-        User memory user = userAddrMap[msg.sender];
-        require(user.count > 0);
-
-        //TODO: erc20 transfer
-        //_address.transfer(candy.perclick);
+        require(candy.isValue);
+        return (candy.candyId, candy.total, candy.balance, candy.perclick, candy.token, candy.isValue);        
     }
+    
+    function getUser(address _userAddress) public view returns (
+        address, 
+        uint256, 
+        uint8, 
+        uint256, 
+        uint256, 
+        uint256, 
+        bool) {
+        User memory user = userAddrMap[_userAddress];
+        require(user.isValue);
+        return (user.userAddress, user.balance, user.count, user.coldtime, user.lasttime, user.authtime, user.isValue);
+    }
+}
+
+
+contract TokenInterface {
+    constructor () public {}
+    function transferFrom(address _from, address _to, uint256 _value) public returns(bool) {}
+    function transfer(address _to, uint256 _value) public returns(bool) {}
 }

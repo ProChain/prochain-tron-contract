@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.23;
 
 
 /**
@@ -16,9 +16,7 @@ contract PraboxAccessControl {
 
     modifier onlyAdmin() {
         require(
-            msg.sender == adminA ||
-            msg.sender == adminB ||
-            msg.sender == owner
+            msg.sender == adminA || msg.sender == adminB || msg.sender == owner
         );
         _;
     }
@@ -51,5 +49,9 @@ contract PraboxAccessControl {
 
     function unpause() public onlyAdmin whenPaused {
         paused = false;
+    }
+
+    function withdrawBalance() public onlyAdmin {
+        owner.transfer(address(this).balance);
     }
 }
