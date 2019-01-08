@@ -21,6 +21,10 @@ contract PraboxAccessControl {
         _;
     }
 
+    constructor() public {
+        owner = msg.sender;
+    }
+
     function setAdminA(address newAdmin) public onlyAdmin {
         require(newAdmin != address(0));
         adminA = newAdmin;
@@ -51,6 +55,7 @@ contract PraboxAccessControl {
         paused = false;
     }
 
+    //TODO: 传address参数?
     function withdrawBalance() public onlyAdmin {
         owner.transfer(address(this).balance);
     }
