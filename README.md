@@ -21,3 +21,5 @@
         在Code->设置->用户设置里，加入："solidity.compileUsingRemoteVersion" : "v0.4.23+commit.124ca40d"
         默认是 "latest"
     ```
+
+- shasta测试网：https://shasta.tronscan.org/
