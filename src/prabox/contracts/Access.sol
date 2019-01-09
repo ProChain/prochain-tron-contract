@@ -50,4 +50,8 @@ contract PraboxAccessControl {
     function unpause() public onlyAdmin whenPaused {
         paused = false;
     }
+
+    function withdrawBalance() public onlyAdmin {
+        owner.transfer(address(this).balance);
+    }
 }

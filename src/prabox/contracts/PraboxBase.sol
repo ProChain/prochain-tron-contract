@@ -131,6 +131,9 @@ contract PraboxBase is PraboxAccessControl {
         _;
     }
 
+    /*** EVENTS ***/
+    event ClickEvent(address indexed _user, uint32 indexed _candyId, uint256 _perclick);
+
     /*** FUNCTION ***/
     constructor() public {
         owner = msg.sender;
@@ -160,7 +163,7 @@ contract PraboxBase is PraboxAccessControl {
         return _id;
     }
 
-    function click(uint32 _candyId) public returns (uint32) {
+    function click(uint32 _candyId) public whenNotPaused returns (uint32) {
         Candy storage candy = candyMap[_candyId];
         require(candy.candyId > 0 && candy.isValue);
 
@@ -172,12 +175,15 @@ contract PraboxBase is PraboxAccessControl {
         candy.balance = candy.balance - candy.perclick;
         user.count = 0;
         user.lasttime = now;
+
+        ClickEvent(msg.sender, candy.candyId, candy.perclick);
+
         return _candyId;
     }
 
     function auth(address userAddress) public onlyAdmin returns (bool) {
         User storage user = userAddrMap[userAddress];
-        if(!user.isValue) {
+        if (!user.isValue) {
             user.userAddress = msg.sender;
             user.balance = 0;
             user.count = 1;
@@ -189,17 +195,32 @@ contract PraboxBase is PraboxAccessControl {
         return true;
     }
 
-    function getCandy(uint32 _candyId) public view returns (uint32, uint256, uint256, uint256, address, bool) {
+    function getCandy(uint32 _candyId) public view returns (
+        uint32, 
+        uint256, 
+        uint256, 
+        uint256, 
+        address, 
+        bool) {
         Candy memory candy = candyMap[_candyId];
         require(candy.isValue);
         return (candy.candyId, candy.total, candy.balance, candy.perclick, candy.token, candy.isValue);        
     }
-    function getUser(address _userAddress) public view returns (address, uint256, uint8, uint256, uint256, uint256, bool) {
+    
+    function getUser(address _userAddress) public view returns (
+        address, 
+        uint256, 
+        uint8, 
+        uint256, 
+        uint256, 
+        uint256, 
+        bool) {
         User memory user = userAddrMap[_userAddress];
         require(user.isValue);
         return (user.userAddress, user.balance, user.count, user.coldtime, user.lasttime, user.authtime, user.isValue);
     }
 }
+
 
 contract TokenInterface {
     constructor () public {}
