@@ -118,7 +118,7 @@ contract PraboxBase is PraboxAccessControl {
     User[] userList;
     mapping(address => User) userAddrMap;
 
-    Candy[] candyList;
+    Candy[] public candyList;
     mapping(uint32 => Candy) public candyMap;
 
     mapping(address => Black) blackUserMap;
@@ -155,7 +155,7 @@ contract PraboxBase is PraboxAccessControl {
             token: _token,
             isValue: true
         });
-
+        candyList.push(candy);
         candyMap[_id] = candy;
         return _id;
     }
