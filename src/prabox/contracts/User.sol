@@ -36,7 +36,7 @@ contract UserContract is UserInterface, PraboxAccessControl {
     function auth(address userAddress) public onlyAdmin returns (bool) {
         User storage user = userAddrMap[userAddress];
         if (!user.isValue) {
-            user.userAddress = msg.sender;
+            user.userAddress = userAddress;
             user.balance = 0;
             user.count = 1;
             user.coldtime = 14400;
