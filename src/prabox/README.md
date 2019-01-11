@@ -36,5 +36,11 @@
    - unpause()
 
 ## 错误代码
-$PRABOXERROR#1$ user is banned
+$PRABOXERROR#101$ user is banned <br />
+$PRABOXERROR#201$ User.click caller is illegal <br />
+$PRABOXERROR#202$ User has not been authed <br />
+$PRABOXERROR#203$ User has not chance <br />
+$PRABOXERROR#301$ Candy.click caller is illegal <br />
+$PRABOXERROR#302$ candy is not exist <br />
+$PRABOXERROR#303$ candy has no balance <br />
 
