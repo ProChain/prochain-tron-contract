@@ -47,7 +47,7 @@ contract PraboxBase is PraboxAccessControl {
 
     function click(uint32 _candyId) public whenNotPaused returns (uint32) {
         //check blacklist
-        require(iBlack.validAddress(msg.sender));
+        require(iBlack.validAddress(msg.sender), "#PRABOXERROR$101# user is banned");
 
         //click candy
         require(iUser.click(msg.sender) && iCandy.click(msg.sender, _candyId));

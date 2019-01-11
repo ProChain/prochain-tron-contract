@@ -86,11 +86,11 @@ contract CandyContract is CandyInterface, PraboxAccessControl {
     }
 
     function click(address _user, uint32 _candyId) public returns (bool) {
-        require(msg.sender == praboxAddress || msg.sender == owner);
+        require(msg.sender == praboxAddress || msg.sender == owner, "$PRABOXERROR#301$ Candy.click caller is illegal");
 
         Candy storage candy = candyMap[_candyId];
-        require(candy.isValue && candy.candyId > 0);
-        require(candy.perclick <= candy.balance);
+        require(candy.isValue && candy.candyId > 0, "$PRABOXERROR#302$ candy is not exist");
+        require(candy.perclick <= candy.balance, "$PRABOXERROR#303$ candy has no balance");
 
         candy.token.transfer(_user, candy.perclick);
         candy.balance = candy.balance - candy.perclick;

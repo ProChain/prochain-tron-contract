@@ -58,11 +58,11 @@ contract UserContract is UserInterface, PraboxAccessControl {
     }
 
     function click(address _user) public returns (bool) {
-        require(msg.sender == praboxAddress || msg.sender == owner);
+        require(msg.sender == praboxAddress || msg.sender == owner, "$PRABOXERROR#201$ User.click caller is illegal");
 
         User storage user = userAddrMap[_user];
-        require(user.isValue && user.authtime + 3600 * 24 >= now);
-        require(user.count > 0 || user.lasttime + user.coldtime < now);
+        require(user.isValue && user.authtime + 3600 * 24 >= now, "$PRABOXERROR#202$ User has not been authed");
+        require(user.count > 0 || user.lasttime + user.coldtime < now, "$PRABOXERROR#203$ User has not chance");
 
         user.count = user.count - 1;
         user.lasttime = now;

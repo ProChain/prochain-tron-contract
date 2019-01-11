@@ -34,3 +34,7 @@
    - setAdminB()
    - pause()
    - unpause()
+
+## 错误代码
+$PRABOXERROR#1$ user is banned
+
